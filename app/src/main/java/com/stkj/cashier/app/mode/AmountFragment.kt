@@ -18,7 +18,9 @@ import android.view.View
 import android.view.View.FOCUS_DOWN
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -98,6 +100,7 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
     var mIsPaying = false
     public var switchTongLianPay = false;
     public var isScanCode = false;
+    private var pwdPageIndex = 0
 
 
 
@@ -121,6 +124,11 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
         try{
+
+            if (SPUtils.getInstance().getBoolean(Constants.SWITCH_SAFE_SETTINGS, false)) {
+                binding.rlPassword.visibility = VISIBLE
+                selectPasswordItem(pwdPageIndex)
+            }
             switchTongLianPay = SPUtils.getInstance().getBoolean(Constants.SWITCH_TONG_LIAN_PAY)
         EventBus.getDefault().post(MessageEventBean(MessageEventType.AmountNotice2))
         LogUtils.e("MessageEventType.AmountNotice2 initData")
@@ -1263,6 +1271,42 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
             .post(MessageEventBean(MessageEventType.AmountRefundCancel))
     }
 
+    private fun handleInputTimeNumber(
+        insetNumber: String,
+        amountTextView: TextView
+    ) {
+        val text = amountTextView.text.toString()
+        if (TextUtils.isEmpty(text)) {
+            if (insetNumber == ".") {
+                //amountTextView.text = "0."
+            } else {
+                amountTextView.text = insetNumber
+            }
+        } else {
+            //判断数字长度不能超多
+            val pointIndex: Int = text.indexOf(".")
+            if (pointIndex != -1) {
+                //获取小数点位数 最多两位小数
+                if (text.length - 1 >= pointIndex + 2) {
+                    CommonTipsHelper.INSTANCE.setTipsDelayHide("最多两位小数")
+                    return
+                }
+            } else {
+                if (text.length >= 6 && insetNumber != ".") {
+                    CommonTipsHelper.INSTANCE.setTipsDelayHide("超过最大限值")
+                    return
+                }
+            }
+            if (insetNumber == ".") {
+//                if (!text.contains(".")) {
+//                    amountTextView.text = "$text."
+//                }
+            } else {
+                amountTextView.text = "$text$insetNumber"
+            }
+        }
+    }
+
     fun onKeyEvent3(inputCode: String?): Boolean {
         Log.d(TAG, "limeonKeyEvent3 ========> onKeyEvent3 " + inputCode)
         if (!TextUtils.isEmpty(inputCode)) {
@@ -1278,6 +1322,16 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
                 "8",
                 "9"
                 -> {
+                    if (binding.rlPassword.isVisible){
+                        if (pwdPageIndex == 0){
+                            handleInputTimeNumber(
+                                inputCode,
+                                binding.tvInputPwd
+                            )
+                        }
+                        return false
+                    }
+
                     //判断定额模式
                     if (isCurrentFixAmountMode) {
                         ttsSpeak("定额模式下不可操作")
@@ -1333,6 +1387,34 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
 
 
                 "确认" -> {
+                    if (binding.rlPassword.isVisible){
+                        if (pwdPageIndex == 1){
+                            ttsSpeak("重置密码")
+                        }else{
+
+                          if (TextUtils.isEmpty(binding.tvInputPwd.text.toString())){
+                              ttsSpeak("请输入密码")
+                              return false
+                          }
+
+                            if (binding.tvInputPwd.text.toString().length < 4){
+                                ttsSpeak("密码错误,请重新输入")
+                                CommonTipsHelper.INSTANCE.setTipsDelayHide("密码错误,请重新输入")
+                                return false
+                            }
+
+                            if (binding.tvInputPwd.text.toString() == SPUtils.getInstance().getString(Constants.SAFE_SETTINGS_PWD)){
+                                ttsSpeak("解锁成功")
+                                binding.rlPassword.visibility = View.GONE
+                            }else{
+                                ttsSpeak("密码错误,请重新输入")
+                                CommonTipsHelper.INSTANCE.setTipsDelayHide("密码错误,请重新输入")
+                                binding.tvInputPwd.text = ""
+                            }
+
+                        }
+                        return false
+                    }
                     Log.w(TAG, "limekey 1115: " + "确认")
                     if (mIsRefund) {
                         if (mAdapter?.data?.size!! > 0) {
@@ -1469,6 +1551,16 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
                 }
 
                 "删除" -> {
+                    if (binding.rlPassword.isVisible){
+                        if (pwdPageIndex == 0){
+                            return handleDelTimeNumber(
+                                Constants.SAFE_SETTINGS_TIME,
+                                binding.tvInputPwd
+                            )
+
+                        }
+                        return false
+                    }
                     Log.d(TAG, "limekey 1221: " + "删除")
                     scanningCode = ""
                     isScanCode = false
@@ -1561,6 +1653,16 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
 
                 "向上" -> {
                     //ttsSpeak("向上")
+                    if (binding.rlPassword.isVisible){
+                        if (pwdPageIndex > 0){
+                            pwdPageIndex--
+                        } else{
+                            pwdPageIndex = 0;
+                        }
+                        selectPasswordItem(pwdPageIndex)
+                        return false
+                    }
+
                     if (!mIsRefund) {
                         //上下键操作
                         val offset = binding.tvAmount.getPaint().getTextSize()
@@ -1609,6 +1711,15 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
                 }
 
                 "向下" -> {
+                    if (binding.rlPassword.isVisible){
+                        if (pwdPageIndex < 1){
+                            pwdPageIndex++
+                        } else{
+                            pwdPageIndex = 0;
+                        }
+                        selectPasswordItem(pwdPageIndex)
+                        return false
+                    }
                     //ttsSpeak("向下")
                     if (!mIsRefund) {
                         //上下键操作
@@ -2080,6 +2191,37 @@ class AmountFragment : BaseFragment<ModeViewModel, AmountFragment580Binding>(),
                 tipLoadDialog!!.setMsgAndType(msg, TipLoadDialog.ICON_TYPE_LOADING2).show()
             }
         }
+    }
+
+    private fun selectPasswordItem(pwdPageIndex:Int){
+        binding.tvInputPwd.isSelected = false
+        binding.tvRestPwd.isSelected = false
+        if (pwdPageIndex == 1){
+            binding.tvRestPwd.isSelected = true
+        }else{
+            binding.tvInputPwd.isSelected = true
+        }
+    }
+
+    private fun handleDelTimeNumber(
+        amountConst: String,
+        amountTextView: TextView
+    ): Boolean {
+        try {
+            val amountTxt = amountTextView.text.toString()
+            if (amountTxt.length == 0) {
+                amountTextView.text = ""
+                return false
+            } else if (amountTxt.length == 1) {
+                amountTextView.text = ""
+            } else {
+                amountTextView.text = amountTxt.substring(0, amountTxt.length - 1)
+            }
+            return true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        return false
     }
 
 

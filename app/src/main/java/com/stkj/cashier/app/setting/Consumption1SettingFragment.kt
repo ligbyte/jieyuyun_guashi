@@ -69,6 +69,11 @@ class Consumption1SettingFragment :
 
     //第二层页面总item数量
     private val secondPageSelectItemCount = 8
+
+
+    //第三层页面总item数量
+    private val threePageSelectItemCount = 5
+
     private val fixAmountDataMap: MutableMap<String, String> = mutableMapOf()
 
     /**
@@ -143,7 +148,6 @@ class Consumption1SettingFragment :
     override fun initData(savedInstanceState: Bundle?) {
         super.initData(savedInstanceState)
      try{
-
         showFirstPage()
     } catch (e: Throwable) {
          Log.e("TAG", "limeException 142: " + e.message)
@@ -205,6 +209,10 @@ class Consumption1SettingFragment :
                 currentSelectIndex = secondPageSelectItemCount - 1
                 Log.e("selectScrollItem", "-scrollPreItem--resetIndex- = $currentSelectIndex")
             }
+        }else if (mPageIndex == 2) {
+            if (currentSelectIndex <= -1) {
+                currentSelectIndex = threePageSelectItemCount - 1
+            }
         }
         Log.e("selectScrollItem", "-scrollPreItem-currentSelectIndex-- = $currentSelectIndex")
         selectScrollItem(currentSelectIndex)
@@ -265,6 +273,10 @@ class Consumption1SettingFragment :
             if (currentSelectIndex >= secondPageSelectItemCount) {
                 currentSelectIndex = 0
                 Log.e("selectScrollItem", "-scrollNextItem--resetIndex- = $currentSelectIndex")
+            }
+        }else if (mPageIndex == 2) {
+            if (currentSelectIndex >= threePageSelectItemCount) {
+                currentSelectIndex = 0
             }
         }
         Log.d("selectScrollItem", "limecurrentSelectIndex = $currentSelectIndex")
@@ -423,6 +435,49 @@ class Consumption1SettingFragment :
             if (focusView != null) {
                 binding.svContent.smoothScrollTo(0, focusView.top)
             }
+        }else if (mPageIndex == 2) {
+            binding.flSwitchSafeSettings.background = null
+            binding.flAutoLock.background = null
+            binding.flLockPwd.background = null
+            binding.llSwitchLock.background = null
+            binding.tvOpenLock.isSelected = false
+            binding.tvLockCancle.isSelected = false
+
+            var focusView: View? = null
+            when (itemIndex) {
+                0 -> {
+                    binding.flSwitchSafeSettings.background = ColorDrawable(0x12ffffff)
+                    focusView = binding.flSwitchSafeSettings
+                }
+
+                1 -> {
+                    binding.flAutoLock.background = ColorDrawable(0x12ffffff)
+                    focusView = binding.flAutoLock
+                }
+
+                2 -> {
+                    binding.flLockPwd.background = ColorDrawable(0x12ffffff)
+                    focusView = binding.flLockPwd
+                }
+
+
+                3 -> {
+                    binding.llSwitchLock.background = ColorDrawable(0x12ffffff)
+                    binding.tvOpenLock.isSelected = true
+                    focusView = binding.llSwitchLock
+                }
+
+
+                4 -> {
+                    binding.llSwitchLock.background = ColorDrawable(0x12ffffff)
+                    binding.tvLockCancle.isSelected = true
+                    focusView = binding.llSwitchLock
+                }
+
+            }
+            if (focusView != null) {
+                binding.svContent.smoothScrollTo(0, focusView.top)
+            }
         }
 
     }
@@ -472,7 +527,17 @@ class Consumption1SettingFragment :
                                     } else {
                                         backPress()
                                     }
-                                } else {
+                                }else  if (mPageIndex == 2) {
+                                    if (currentSelectIndex == 1 || currentSelectIndex == 2) {
+                                        if (!processDelNumber()) {
+                                            // TODO:
+                                        } else {
+
+                                        }
+                                    } else {
+                                        backPress()
+                                    }
+                                }else {
                                     backPress()
                                 }
                             }
@@ -482,7 +547,61 @@ class Consumption1SettingFragment :
                             }
 
                             "确认" -> {
-                                if (mPageIndex == 0) {
+                                 if (mPageIndex == 2) {
+                                    if (currentSelectIndex == 0) {
+                                        val switchSafeSettings = binding.ivSwitchSafeSettings.isSelected
+                                        binding.ivSwitchSafeSettings.isSelected = !switchSafeSettings
+                                        if (binding.ivSwitchSafeSettings.isSelected) {
+
+
+//                                            SPUtils.getInstance()
+//                                                .put(Constants.SWITCH_OFFLINE_PAY, true)
+//                                            EventBus.getDefault()
+//                                                .post(MessageEventBean(MessageEventType.OpenOfflinePay,"1"))
+//
+//                                            EventBus.getDefault()
+//                                                .post(MessageEventBean(MessageEventType.UplaodOfflineOrdersWithLoading,"1"))
+
+                                        } else {
+                                            SPUtils.getInstance()
+                                                .put(Constants.SWITCH_SAFE_SETTINGS, false)
+
+                                        }
+
+                                    } else if (currentSelectIndex == 3) {
+                                        if (binding.ivSwitchSafeSettings.isSelected) {
+
+                                            if (TextUtils.isEmpty(binding.tvLockTime.text)) {
+                                                ttsSpeak("请输入锁屏时间")
+                                            } else {
+                                                if (TextUtils.isEmpty(binding.tvLockPwd.text)) {
+                                                    ttsSpeak("请输入锁屏密码")
+                                                } else {
+
+                                                    if (binding.tvLockPwd.text.length < 4){
+                                                        showTips("请至少输入4个数字")
+                                                        return
+                                                    }
+
+                                                    SPUtils.getInstance().put(Constants.SAFE_SETTINGS_TIME, binding.tvLockTime.text.toString())
+                                                    SPUtils.getInstance().put(Constants.SAFE_SETTINGS_PWD, binding.tvLockPwd.text.toString())
+                                                    SPUtils.getInstance().put(Constants.SWITCH_SAFE_SETTINGS, true)
+                                                    showFirstPage()
+                                                    //returnMainPage()
+                                                }
+                                            }
+
+
+                                        }else{
+                                            ttsSpeak("请打开设置锁屏")
+                                        }
+                                    }else if (currentSelectIndex == 4) {
+                                        showFirstPage()
+                                        returnMainPage()
+                                    }else{
+
+                                    }
+                                }else if (mPageIndex == 0) {
                                     if (binding.updateFaceConfirm.isVisible) {
                                         binding.updateFaceConfirm.visibility = View.GONE
                                         if (!SystemUtils.isNetWorkActive(getApp())) {
@@ -523,8 +642,7 @@ class Consumption1SettingFragment :
                                         binding.updateFaceConfirm.visibility = View.VISIBLE
                                     }else if (currentSelectIndex == 3) {
                                         //ToastUtils.showLong("安全设置")
-
-
+                                        showThreePage()
                                     }else if (currentSelectIndex == 4) {
                                         val switchTongLianPay = binding.ivSwitchTongLianPay.isSelected
                                         binding.ivSwitchTongLianPay.isSelected = !switchTongLianPay
@@ -633,7 +751,7 @@ class Consumption1SettingFragment :
                                     } else {
 
                                     }
-                                } else {
+                                }  else {
 
                                 }
                             }
@@ -651,6 +769,17 @@ class Consumption1SettingFragment :
                             ".",
                                 -> {
                                 if (mPageIndex == 1) {
+                                    if (binding.flTips.visibility == View.VISIBLE) {
+                                        hidTips()
+                                        return
+                                    }
+                                    try {
+                                        handleInputNumber(it)
+                                    } catch (e: Throwable) {
+                                        e.printStackTrace()
+                                        showTips("输入数字异常,请重新输入")
+                                    }
+                                } else if (mPageIndex == 2) {
                                     if (binding.flTips.visibility == View.VISIBLE) {
                                         hidTips()
                                         return
@@ -728,6 +857,27 @@ class Consumption1SettingFragment :
         return false
     }
 
+    private fun handleDelTimeNumber(
+        amountConst: String,
+        amountTextView: TextView
+    ): Boolean {
+        try {
+            val amountTxt = amountTextView.text.toString()
+            if (amountTxt.length == 0) {
+                amountTextView.text = ""
+                return false
+            } else if (amountTxt.length == 1) {
+                amountTextView.text = ""
+            } else {
+                amountTextView.text = amountTxt.substring(0, amountTxt.length - 1)
+            }
+            return true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        return false
+    }
+
     private fun processDelNumber(): Boolean {
         if (mPageIndex == 1) {
             when (currentSelectIndex) {
@@ -756,6 +906,26 @@ class Consumption1SettingFragment :
                     )
                 }
             }
+        }else  if (mPageIndex == 2) {
+            when (currentSelectIndex) {
+
+                //锁屏时间
+                1 -> {
+                    return handleDelTimeNumber(
+                        Constants.SAFE_SETTINGS_TIME,
+                        binding.tvLockTime
+                    )
+                }
+
+                //锁屏密码
+                2 -> {
+                    return handleDelTimeNumber(
+                        Constants.SAFE_SETTINGS_PWD,
+                        binding.tvLockPwd
+                    )
+                }
+
+            }
         }
         return false
     }
@@ -768,6 +938,12 @@ class Consumption1SettingFragment :
         if (mPageIndex == 0) {
             returnMainPage()
         } else if (mPageIndex == 1) {
+            if (binding.flTips.visibility == View.VISIBLE) {
+                hidTips()
+                return
+            }
+            showFirstPage()
+        }else if (mPageIndex == 2) {
             if (binding.flTips.visibility == View.VISIBLE) {
                 hidTips()
                 return
@@ -840,7 +1016,35 @@ class Consumption1SettingFragment :
             SPUtils.getInstance().getString(Constants.DINNER_AMOUNT, "") //晚餐金额
     }
 
+    private fun showThreePage() {
+        try{
+
+            mPageIndex = 2
+            currentSelectIndex = -1
+            binding.llPageFirst.visibility = View.GONE
+            binding.llPageSecond.visibility = View.GONE
+            binding.llPageThree.visibility = View.VISIBLE
+            refreshThreePageData()
+            Choreographer.getInstance().postFrameCallbackDelayed( {
+                scrollNextItem()
+            },50)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private fun refreshThreePageData() {
+        val safeSettingsSwitch =
+            SPUtils.getInstance().getBoolean(Constants.SWITCH_SAFE_SETTINGS, false)
+        binding.ivSwitchSafeSettings.isSelected = safeSettingsSwitch
+        binding.tvLockTime.text = SPUtils.getInstance().getString(Constants.SAFE_SETTINGS_TIME,"30")
+        binding.tvLockPwd.text = SPUtils.getInstance().getString(Constants.SAFE_SETTINGS_PWD)
+
+    }
+
     private fun showTips(tips: String) {
+        Log.d(TAG, "limeshowTips: " + 1047)
         binding.flTips.removeCallbacks(hidTipsTask)
         binding.flTips.visibility = View.VISIBLE
         binding.tvTips.text = tips
@@ -888,33 +1092,96 @@ class Consumption1SettingFragment :
         }
     }
 
-    private fun handleInputNumber(insetNumber: String) {
-        when (currentSelectIndex) {
-
-            //早餐金额
-            3 -> {
-                handleInputAmountNumber(
-                    insetNumber,
-                    binding.tvBreakfastAmount
-                )
+    private fun handleInputTimeNumber(
+        insetNumber: String,
+        amountTextView: TextView
+    ) {
+        val text = amountTextView.text.toString()
+        if (TextUtils.isEmpty(text)) {
+            if (insetNumber == ".") {
+                //amountTextView.text = "0."
+            } else {
+                amountTextView.text = insetNumber
             }
-
-            //午餐金额
-            4 -> {
-                handleInputAmountNumber(
-                    insetNumber,
-                    binding.tvLunchAmount
-                )
+        } else {
+            //判断数字长度不能超多
+            val pointIndex: Int = text.indexOf(".")
+            if (pointIndex != -1) {
+                //获取小数点位数 最多两位小数
+                if (text.length - 1 >= pointIndex + 2) {
+                    showTips("最多两位小数")
+                    return
+                }
+            } else {
+                if (text.length >= 6 && insetNumber != ".") {
+                    showTips("超过最大限值")
+                    return
+                }
             }
-
-            //晚餐金额
-            5 -> {
-                handleInputAmountNumber(
-                    insetNumber,
-                    binding.tvDinnerAmount
-                )
+            if (insetNumber == ".") {
+//                if (!text.contains(".")) {
+//                    amountTextView.text = "$text."
+//                }
+            } else {
+                amountTextView.text = "$text$insetNumber"
             }
         }
+    }
+
+    private fun handleInputNumber(insetNumber: String) {
+         if (mPageIndex == 1) {
+             when (currentSelectIndex) {
+
+                 //早餐金额
+                 3 -> {
+                     handleInputAmountNumber(
+                         insetNumber,
+                         binding.tvBreakfastAmount
+                     )
+                 }
+
+                 //午餐金额
+                 4 -> {
+                     handleInputAmountNumber(
+                         insetNumber,
+                         binding.tvLunchAmount
+                     )
+                 }
+
+                 //晚餐金额
+                 5 -> {
+                     handleInputAmountNumber(
+                         insetNumber,
+                         binding.tvDinnerAmount
+                     )
+                 }
+             }
+
+         }else if (mPageIndex == 2) {
+             Log.d(TAG,"limecurrentSelectIndex1125 1125 + currentSelectIndex: " + currentSelectIndex)
+             Log.i(TAG,"limecurrentSelectIndex1125 1125 + insetNumber: " + insetNumber)
+
+             when (currentSelectIndex) {
+
+                 //锁屏时间
+                 1 -> {
+                     handleInputTimeNumber(
+                         insetNumber,
+                         binding.tvLockTime
+                     )
+                 }
+
+                 //锁屏密码
+                 2 -> {
+                     handleInputTimeNumber(
+                         insetNumber,
+                         binding.tvLockPwd
+                     )
+                 }
+
+
+             }
+         }
     }
 
     private fun handleCanteenTimeSetting() {
