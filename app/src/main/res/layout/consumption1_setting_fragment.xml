@@ -130,6 +130,28 @@
                         </FrameLayout>
 
                         <FrameLayout
+                            android:id="@+id/fl_safe_settings"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginLeft="25dp"
+                                android:gravity="center_vertical"
+                                android:text="安全设置"
+                                android:textColor="@color/white"
+                                android:textSize="40sp" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="2dp"
+                                android:layout_gravity="bottom"
+                                android:background="#17d8d8d8" />
+                        </FrameLayout>
+
+
+                        <FrameLayout
                             android:id="@+id/fl_switch_tong_lian_pay"
                             android:layout_width="match_parent"
                             android:visibility="visible"

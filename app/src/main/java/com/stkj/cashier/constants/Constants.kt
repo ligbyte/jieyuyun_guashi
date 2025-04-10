@@ -96,6 +96,7 @@ object Constants {
     const val SWITCH_OFFLINE_PAY = "switch_offline_pay" //离线支付
     const val SWITCH_FIX_AMOUNT = "SWITCH_FIX_AMOUNT" //定额模式开关
 
+
     const val CURRENT_FIX_AMOUNT_TIME = "CURRENT_FIX_AMOUNT_TIME" //当前定额模式时间段
 
     const val BREAKFAST_SWITCH = "BREAKFAST_SWITCH" //早餐开关

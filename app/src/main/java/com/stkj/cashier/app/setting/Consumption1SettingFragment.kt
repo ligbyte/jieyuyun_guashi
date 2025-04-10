@@ -28,6 +28,7 @@ import com.stkj.cashier.util.ShellUtils
 import com.stkj.cashier.util.util.LogUtils
 import com.stkj.cashier.util.util.SPUtils
 import com.stkj.cashier.util.util.SpanUtils
+import com.stkj.cashier.util.util.ToastUtils
 import dagger.hilt.android.AndroidEntryPoint
 import org.greenrobot.eventbus.EventBus
 
@@ -280,6 +281,7 @@ class Consumption1SettingFragment :
             binding.flRebootDevice.background = null
             binding.flSwitchTongLianPay.background = null
             binding.flFaceUpdate.background = null
+            binding.flSafeSettings.background = null
 
             var focusView: View? = null
             when (itemIndex) {
@@ -299,21 +301,26 @@ class Consumption1SettingFragment :
                 }
 
                 3 -> {
+                    binding.flSafeSettings.background = ColorDrawable(0x12ffffff)
+                    focusView = binding.flSafeSettings
+                }
+
+                4 -> {
                     binding.flSwitchTongLianPay.background = ColorDrawable(0x12ffffff)
                     focusView = binding.flSwitchTongLianPay
                 }
 
-                4 -> {
+                5 -> {
                     binding.flRestartApp.background = ColorDrawable(0x12ffffff)
                     focusView = binding.flRestartApp
                 }
 
-                5 -> {
+                6 -> {
                     binding.flShutdownDevice.background = ColorDrawable(0x12ffffff)
                     focusView = binding.flShutdownDevice
                 }
 
-                6 -> {
+                7 -> {
                     binding.flRebootDevice.background = ColorDrawable(0x12ffffff)
                     focusView = binding.flRebootDevice
                 }
@@ -515,6 +522,10 @@ class Consumption1SettingFragment :
                                     } else if (currentSelectIndex == 2) {
                                         binding.updateFaceConfirm.visibility = View.VISIBLE
                                     }else if (currentSelectIndex == 3) {
+                                        //ToastUtils.showLong("安全设置")
+
+
+                                    }else if (currentSelectIndex == 4) {
                                         val switchTongLianPay = binding.ivSwitchTongLianPay.isSelected
                                         binding.ivSwitchTongLianPay.isSelected = !switchTongLianPay
                                         if (binding.ivSwitchTongLianPay.isSelected) {
@@ -530,11 +541,11 @@ class Consumption1SettingFragment :
                                         }
                                     }else if (currentSelectIndex == 0) {
                                         showSecondPage()
-                                    } else if (currentSelectIndex == 4) {
+                                    } else if (currentSelectIndex == 5) {
                                         ProcessPhoenix.triggerRebirth(App.applicationContext)
-                                    } else if (currentSelectIndex == 5){
-                                        ShellUtils.execCommand("reboot -p",false)
                                     } else if (currentSelectIndex == 6){
+                                        ShellUtils.execCommand("reboot -p",false)
+                                    } else if (currentSelectIndex == 7){
                                         ShellUtils.execCommand("reboot",false)
                                     } else {
 

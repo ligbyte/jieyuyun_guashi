@@ -34,6 +34,8 @@ interface MessageEventType {
         const val PickUpNotice4 = 1085//忽略后不够数量的人脸
         const val CompanyName = 1090
 
+        const val TOAST_SMALL_SCREEN = 1091 //小屏弹出Toast
+
         const val ShowLoadingDialog = 3000
         const val DismissLoadingDialog = 3001
 

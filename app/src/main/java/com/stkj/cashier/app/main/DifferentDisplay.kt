@@ -20,6 +20,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -572,6 +573,12 @@ class DifferentDisplay : Presentation, CameraManager.CameraListener, View.OnClic
                 stopFacePassAuth()
 //                closeAndReleaseCamera()
             }
+
+
+            MessageEventType.TOAST_SMALL_SCREEN -> {
+                Toast.makeText(App.applicationContext, message.content, Toast.LENGTH_SHORT).show()
+            }
+
             MessageEventType.AmountNotice -> {
                 hidePayError()
                 hideBalance()
